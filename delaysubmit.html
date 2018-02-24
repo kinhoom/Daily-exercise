@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script>
+		window.onload=function(){
+			var i=4;
+			a1.textContent='提交('+i+')';
+			a1.style.cursor="not-allowed";
+			a1.onclick=function(e){
+				console.log(e); //结算e(动作)是在return结果后结算的,换而言之，是在动作完成之后，函数彻底执行完毕后结算的。之后return false,则在此之前打印e.defaultPrevented为true
+				return false;
+				//e.preventDefault();
+			}
+			s=setInterval(a,1000);	
+			function a(){
+				i--;	
+				a1.textContent="提交("+i+")";
+				if(i==0){
+					a1.textContent="提交";	
+					a1.style.cursor="auto";
+					a1.onclick=function(){
+						f1.submit();		
+					}
+					clearInterval(s);
+				}
+			}
+		}
+	</script>
+</head>
+<body>
+	<form>
+	<button id="a1" >提交</button>
+	<form>
+</body>
+</html>
