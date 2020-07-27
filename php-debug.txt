@@ -1,0 +1,8 @@
+1.ps aux | grep 'php' | grep -v 'php-fpm'    //查看带'php'字段的进程信息，并排除字段'php-fpm'
+输出头部
+USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
+
+2.strace -p 进程号                           //strace常用来跟踪进程执行时的系统调用和所接收的信号
+
+
+3.sudo netstat -tunpa | grep 进程号          //再用netstat看下这个进程是否打开了什么端口 注：连接建立（ESTABLISHED）和对方主动关闭连接（CLOSE_WAIT）
