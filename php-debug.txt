@@ -7,6 +7,8 @@ USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
 
 3.sudo netstat -tunpa | grep 进程号          //再用netstat看下这个进程是否打开了什么端口 注：连接建立（ESTABLISHED）和对方主动关闭连接（CLOSE_WAIT）
 
+4.lsof 查看进程描述符 运行lsof -nPp 11725 
+
 
 注：strace -T -o strace.log php xxx.php
 一个复杂的脚本往往会输出大量的 TRACE 日志。如果直接输出到屏幕会给排查问题带来极大的不方便。这里我们可以把这些日志保存到指定的文件当中。
