@@ -11,7 +11,7 @@ class PinUser extends Controller {
     public function __construct(){
 	// die('2020年9月7日-2020年9月8日系统维护');
 	$this->redis = redis();
-	$this->redis->select(8);
+	$this->redis->select(2000000);
     }
     //建团 废弃
     public function createGroup1(Request $request){
@@ -21,11 +21,11 @@ $a = Db::connect([
     // 服务器地址
     'hostname'    => '127.0.0.1',
     // 数据库名
-    'database'    => 'lianwo_shop',
+    'database'    => 'cccc',
     // 数据库用户名
-    'username'    => 'root',
+    'username'    => 'dddd',
     // 数据库密码
-    'password'    => 'jbLR8mzLY2zG2pNE',
+    'password'    => 'eeee',
     // 数据库连接端口
     'hostport'    => '3306',
     // 数据库连接参数
@@ -650,9 +650,9 @@ exit;
             $lianwoShop = Db::connect([
                 'type'        => 'mysql',
                 'hostname'    => '127.0.0.1',
-                'database'    => 'lianwo_shop',
-                'username'    => 'root',
-                'password'    => 'jbLR8mzLY2zG2pNE',
+                'database'    => 'cccc',
+                'username'    => 'dddd',
+                'password'    => 'eeee',
                 'hostport'    => '3306',
             ]);
 	    $total = (int)$price * 2 * 10 / 100;
@@ -758,10 +758,10 @@ exit;
 	    $setM = $this->redis->sMembers("pintuanfilter1:{$pid}");
 	    $lianwoShop = Db::connect([
     		'type'        => 'mysql',
-    		'hostname'    => '127.0.0.1',
-    		'database'    => 'lianwo_shop',
-    		'username'    => 'root',
-    		'password'    => 'jbLR8mzLY2zG2pNE',
+    		'hostname'    => 'cccc',
+    		'database'    => 'ddddd',
+    		'username'    => 'eeee',
+    		'password'    => 'ffff',
     		'hostport'    => '3306',
 	    ]);
 	    if(!$setM) {
@@ -1110,7 +1110,7 @@ exit;
     	
     }
     private function sendMessToWorker2(int $pid,int $beginAt,int $endAt) {
-        $client = stream_socket_client('tcp://127.0.0.1:5678', $errno, $errmsg, 1);
+        $client = stream_socket_client('tcp://127.0.0.1:ssssss', $errno, $errmsg, 1);
         if(!$client) return false;
         $data = ['pid'=>$pid,'begin_dt'=>$beginAt,'end_dt'=>$endAt];
         if(FALSE === fwrite($client, json_encode($data)."\n")) {
