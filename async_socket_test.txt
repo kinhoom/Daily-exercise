@@ -1,0 +1,77 @@
+我们可以建立异步连接-不需要等待fsockopen返回连接状态。PHP仍然需要解析hostname（所以直接使用ip更加明智），不过将在打开一个连接之后立刻返回，继而我们就可以连接下一台服务器。
+有两种方法可以实现；PHP5中可以使用新增的stream_socket_client()函数直接替换掉fsocketopen()。PHP5之前的版本，你需要自己动手，用sockets扩展解决问题。
+下面是PHP5中的解决方法：
+它运行的很好，但是在fsockopen()分析完hostname并且建立一个成功的连接（或者延时$timeout秒）之前，扩充这段代码来管理大量服务器将耗费很长时间。
+因此我们必须放弃这段代码；我们可以建立异步连接-不需要等待fsockopen返回连接状态。PHP仍然需要解析hostname（所以直接使用ip更加明智），不过将在打开一个连接之后立刻返回，继而我们就可以连接下一台服务器。
+有两种方法可以实现；PHP5中可以使用新增的stream_socket_client()函数直接替换掉fsocketopen()。PHP5之前的版本，你需要自己动手，用sockets扩展解决问题。
+下面是PHP5中的解决方法：
+
+<?php
+header("Content-type:text/html;charset=utf-8");
+$hosts = array("1.1.1.1", "2.2.2.2", "3.3.3.3");
+$www = array('www.test1.com', 'www.test2.com', 'www.test3.com');
+$timeout = 15;
+$status = array();
+$sockets = array();
+/* Initiate connections to all the hosts simultaneously */
+foreach ($hosts as $id => $host) {
+    $s = stream_socket_client(
+        "$host:80", $errno, $errstr, $timeout,
+        STREAM_CLIENT_ASYNC_CONNECT|STREAM_CLIENT_CONNECT);
+    if ($s) {
+        $sockets[$id] = $s;
+        $status[$id] = "in progress";
+    } else {
+        $status[$id] = "failed, $errno $errstr";
+    }
+}
+/* Now, wait for the results to come back in */
+$wid = array();
+while (count($sockets)) {
+    $read = $write = $sockets;
+    /* This is the magic function - explained below */
+    $n = stream_select($read, $write, $e = null, $timeout);
+    if ($n > 0) {
+        /* readable sockets either have data for us, or are failed
+        * connection attempts */
+        foreach ($read as $r) {
+            $id = array_search($r, $sockets);
+            $data = fread($r, 8192);
+            if (strlen($data) == 0) {
+                if ($status[$id] == "in progress") {
+                    $status[$id] = "failed to connect";
+                }
+                fclose($r);
+                unset($sockets[$id]);
+            } else {
+                $status[$id] .= $data;
+            }
+        }
+        /* writeable sockets can accept an HTTP request */
+        foreach ($write as $w) {
+            $id = array_search($w, $sockets);
+            if(in_array($id, $wid))
+                continue;
+            else
+                $wid[] = $id;
+            fwrite($w, "GET /index/login HTTP/1.0\r\nHost: "
+                . $www[$id] .  "\r\n\r\n");
+            $status[$id] = "waiting for response";
+        }
+    } else {
+        /* timed out waiting; assume that all hosts associated
+        * with $sockets are faulty */
+        foreach ($sockets as $id => $s) {
+            $status[$id] = "timed out " . $status[$id];
+        }
+        break;
+    }
+}
+foreach ($hosts as $id => $host) {
+    echo "Host: $host\n";
+    echo "Status: " . $status[$id] . "\n\n";
+}
+
+
+我们用stream_select()等待sockets打开的连接事件。stream_select()调用系统的select(2)函数来工作：前面三个参数是你要使用的streams的数组；你可以对其读取，写入和获取异常（分别针对三个参数）。stream_select()可以通过设置$timeout（秒）参数来等待事件发生-事件发生时，相应的sockets数据将写入你传入的参数。
+PHP5的先进之处在于，你可以用stream_select()处理几乎所有的stream-例如你可以通过include STDIN用它接收键盘输入并保存进数组，你还可以接收通过proc_open()打开的管道中的数据。
